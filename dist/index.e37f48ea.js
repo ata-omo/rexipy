@@ -580,9 +580,9 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
 
 },{}],"aenu9":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-var _iconsSvg = require("url:../img/icons.svg");
-var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
-const recipeContainer = document.querySelector(".recipe");
+var _model = require("./model");
+var _recipeView = require("./views/recipeView");
+var _recipeViewDefault = parcelHelpers.interopDefault(_recipeView);
 const timeout = function(s) {
     return new Promise(function(_, reject) {
         setTimeout(function() {
@@ -590,29 +590,74 @@ const timeout = function(s) {
         }, s * 1000);
     });
 };
-// https://forkify-api.herokuapp.com/v2
 ///////////////////////////////////////
-const showSpinner = function(parentEl) {
-    const html = `<div class="spinner">
-  <svg>
-    <use href="${(0, _iconsSvgDefault.default)}#icon-loader"></use>
-  </svg>
-</div>`;
-    parentEl.innerHTML = "";
-    parentEl.insertAdjacentHTML("afterbegin", html);
-};
 const showRecipe = async function() {
     try {
+        // getting the dynamyc id from the search bar after the hash change 
+        const id = window.location.hash.slice(1);
+        if (!id) return;
         // loading animation
-        showSpinner(recipeContainer);
-        const response = await fetch(`https://forkify-api.herokuapp.com/api/v2/recipes/5ed6604591c37cdc054bc886`);
+        (0, _recipeViewDefault.default).showSpinner();
+        await _model.loadRecipe(id); // not necessary to store in any variable
+        // if success then we have access to the state 
+        // rendering the fetched data
+        (0, _recipeViewDefault.default).render(_model.state.recipe);
+    } catch (err) {
+        console.log(err);
+    }
+};
+showRecipe();
+window.addEventListener("hashchange", showRecipe);
+window.addEventListener("load", showRecipe);
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./model":"Y4A21","./views/recipeView":"l60JC"}],"gkKU3":[function(require,module,exports) {
+exports.interopDefault = function(a) {
+    return a && a.__esModule ? a : {
+        default: a
+    };
+};
+exports.defineInteropFlag = function(a) {
+    Object.defineProperty(a, "__esModule", {
+        value: true
+    });
+};
+exports.exportAll = function(source, dest) {
+    Object.keys(source).forEach(function(key) {
+        if (key === "default" || key === "__esModule" || Object.prototype.hasOwnProperty.call(dest, key)) return;
+        Object.defineProperty(dest, key, {
+            enumerable: true,
+            get: function() {
+                return source[key];
+            }
+        });
+    });
+    return dest;
+};
+exports.export = function(dest, destName, get) {
+    Object.defineProperty(dest, destName, {
+        enumerable: true,
+        get: get
+    });
+};
+
+},{}],"Y4A21":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "state", ()=>state);
+parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe);
+const state = {
+    recipe: {}
+};
+const loadRecipe = async function(id) {
+    try {
+        const response = await fetch(`https://forkify-api.herokuapp.com/api/v2/recipes/${id}`);
         // console.log(response);
         if (!response.ok) throw new Error(`unable to find the recipe`);
         const data = await response.json();
         // console.log(data);
         // beautifying the data
-        let { recipe } = data.data;
-        recipe = {
+        const { recipe } = data.data;
+        state.recipe = {
             id: recipe.id,
             title: recipe.title,
             ingredients: recipe.ingredients,
@@ -623,7 +668,34 @@ const showRecipe = async function() {
             cookingTime: recipe.cooking_time
         };
         console.log(recipe);
-        // rendering the fetched data
+        console.log(state.recipe);
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"l60JC":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _iconsSvg = require("url:../../img/icons.svg");
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+class ViewRecipe {
+    #parentElement = document.querySelector(".recipe");
+    #data;
+    render(data) {
+        this.#data = data;
+        this.#clearExistingHtml();
+        const markup = this.#generateHtml();
+        this.#insertNewHtml(markup);
+    }
+    #clearExistingHtml() {
+        this.#parentElement.innerHTML = "";
+    }
+    #insertNewHtml(markup) {
+        this.#parentElement.insertAdjacentHTML("afterbegin", markup);
+    }
+    #generateHtml() {
+        const recipe = this.#data;
         const html = `<figure class="recipe__fig">
       <img src="${recipe.image}" alt="${recipe.title}" class="recipe__img" />
       <h1 class="recipe__title">
@@ -709,45 +781,21 @@ const showRecipe = async function() {
         </svg>
       </a>
     </div>`;
-        recipeContainer.innerHTML = "";
-        recipeContainer.insertAdjacentHTML("afterbegin", html);
-    } catch (err) {
-        console.log(err);
+        return html;
     }
-};
-showRecipe();
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","url:../img/icons.svg":"loVOp"}],"gkKU3":[function(require,module,exports) {
-exports.interopDefault = function(a) {
-    return a && a.__esModule ? a : {
-        default: a
+    showSpinner = function() {
+        const html = `<div class="spinner">
+    <svg>
+      <use href="${(0, _iconsSvgDefault.default)}#icon-loader"></use>
+    </svg>
+  </div>`;
+        this.#parentElement.innerHTML = "";
+        this.#parentElement.insertAdjacentHTML("afterbegin", html);
     };
-};
-exports.defineInteropFlag = function(a) {
-    Object.defineProperty(a, "__esModule", {
-        value: true
-    });
-};
-exports.exportAll = function(source, dest) {
-    Object.keys(source).forEach(function(key) {
-        if (key === "default" || key === "__esModule" || Object.prototype.hasOwnProperty.call(dest, key)) return;
-        Object.defineProperty(dest, key, {
-            enumerable: true,
-            get: function() {
-                return source[key];
-            }
-        });
-    });
-    return dest;
-};
-exports.export = function(dest, destName, get) {
-    Object.defineProperty(dest, destName, {
-        enumerable: true,
-        get: get
-    });
-};
+}
+exports.default = new ViewRecipe(); // we are not exporting the whole class we are just exporting one instance
 
-},{}],"loVOp":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","url:../../img/icons.svg":"loVOp"}],"loVOp":[function(require,module,exports) {
 module.exports = require("9bcc84ee5d265e38").getBundleURL("hWUTQ") + "icons.dfd7a6db.svg" + "?" + Date.now();
 
 },{"9bcc84ee5d265e38":"lgJ39"}],"lgJ39":[function(require,module,exports) {
