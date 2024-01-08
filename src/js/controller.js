@@ -1,5 +1,6 @@
 import * as modelData from './model';
-import view from './views/recipeView';
+import recpview from './views/recipeView';
+import srchview from './views/searchView.js';
 
 
 const showRecipe = async function () {
@@ -12,23 +13,46 @@ const showRecipe = async function () {
     if(!id) return;
 
     // loading animation
-    view.showSpinner();
+    recpview.showSpinner();
 
     await modelData.loadRecipe(id); // not necessary to store in any variable
 
     // if success then we have access to the state 
     // rendering the fetched data
-    view.render(modelData.state.recipe);
+    recpview.render(modelData.state.recipe);
 
 
   } catch (err) {
     console.log(err);
+    recpview.showError();
   }
 };
 
+const displaySearchResult= async function(){
+  try{
+
+    const query= srchview.getQuery();
+
+    if(!query) return;
+
+    await modelData.loadSearchResult(query);
+
+    console.log(modelData.state.search.results);
+    // clear the field when search is completed
+    srchview.clearInput();
+
+  }
+  catch (err) {
+    console.log(err);
+  }
+}
+
+displaySearchResult();
+
 
 const init = function(){
-  view.eventHandlerRendrer(showRecipe)
+  recpview.eventHandlerRendrer(showRecipe)
+  srchview.handleSearchResult(displaySearchResult);
 };
 
 init();

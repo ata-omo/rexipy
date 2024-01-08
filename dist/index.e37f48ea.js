@@ -583,6 +583,8 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 var _model = require("./model");
 var _recipeView = require("./views/recipeView");
 var _recipeViewDefault = parcelHelpers.interopDefault(_recipeView);
+var _searchViewJs = require("./views/searchView.js");
+var _searchViewJsDefault = parcelHelpers.interopDefault(_searchViewJs);
 const showRecipe = async function() {
     try {
         // getting the dynamyc id from the search bar after the hash change 
@@ -596,14 +598,29 @@ const showRecipe = async function() {
         (0, _recipeViewDefault.default).render(_model.state.recipe);
     } catch (err) {
         console.log(err);
+        (0, _recipeViewDefault.default).showError();
     }
 };
+const displaySearchResult = async function() {
+    try {
+        const query = (0, _searchViewJsDefault.default).getQuery();
+        if (!query) return;
+        await _model.loadSearchResult(query);
+        console.log(_model.state.search.results);
+        // clear the field when search is completed
+        (0, _searchViewJsDefault.default).clearInput();
+    } catch (err) {
+        console.log(err);
+    }
+};
+displaySearchResult();
 const init = function() {
     (0, _recipeViewDefault.default).eventHandlerRendrer(showRecipe);
+    (0, _searchViewJsDefault.default).handleSearchResult(displaySearchResult);
 };
 init();
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./model":"Y4A21","./views/recipeView":"l60JC"}],"gkKU3":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./model":"Y4A21","./views/recipeView":"l60JC","./views/searchView.js":"9OQAM"}],"gkKU3":[function(require,module,exports) {
 exports.interopDefault = function(a) {
     return a && a.__esModule ? a : {
         default: a
@@ -638,14 +655,19 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "state", ()=>state);
 parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe);
+parcelHelpers.export(exports, "loadSearchResult", ()=>loadSearchResult);
 var _config = require("./config");
 var _helper = require("./helper");
 const state = {
-    recipe: {}
+    recipe: {},
+    search: {
+        query: "",
+        results: []
+    }
 };
 const loadRecipe = async function(id) {
     try {
-        const data = await (0, _helper.getJSONdata)(`${(0, _config.API_URL)}/${id}`);
+        const data = await (0, _helper.getJSONdata)(`${(0, _config.API_URL)}${id}`);
         // console.log(data);
         // beautifying the data
         const { recipe } = data.data;
@@ -663,6 +685,27 @@ const loadRecipe = async function(id) {
         console.log(state.recipe);
     } catch (err) {
         console.log(err);
+        throw err;
+    }
+};
+const loadSearchResult = async function(query) {
+    try {
+        state.search.query = query;
+        const searchData = await (0, _helper.getJSONdata)(`${(0, _config.API_URL)}?search=${query}`);
+        if (searchData.results == 0) throw new Error("Invalid Search Results Not Found ;)");
+        // console.log(searchData);
+        state.search.results = searchData.data.recipes.map((recp)=>{
+            const searchResult = {
+                id: recp.id,
+                title: recp.title,
+                publisher: recp.publisher,
+                image: recp.image_url
+            };
+            return searchResult;
+        });
+    // console.log(state.search)
+    } catch (err) {
+        throw err;
     }
 };
 
@@ -672,7 +715,7 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "API_URL", ()=>API_URL);
 parcelHelpers.export(exports, "TIMEOUT_SEC", ()=>TIMEOUT_SEC);
-const API_URL = "https://forkify-api.herokuapp.com/api/v2/recipes";
+const API_URL = "https://forkify-api.herokuapp.com/api/v2/recipes/";
 const TIMEOUT_SEC = 5;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lVRAz":[function(require,module,exports) {
@@ -692,6 +735,7 @@ const getJSONdata = async function(url) {
         return data;
     } catch (err) {
         console.error(err);
+        throw err;
     }
 };
 const timeout = function(s) {
@@ -710,17 +754,18 @@ var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
 class ViewRecipe {
     #parentElement = document.querySelector(".recipe");
     #data;
+    #errorMessage = `Recipe Not Found TRY Again!!!`;
     render(data) {
         this.#data = data;
         this.#clearExistingHtml();
         const markup = this.#generateHtml();
-        this.#insertNewHtml(markup);
+        this.#insertNewHtml("afterbegin", markup);
     }
     #clearExistingHtml() {
         this.#parentElement.innerHTML = "";
     }
-    #insertNewHtml(markup) {
-        this.#parentElement.insertAdjacentHTML("afterbegin", markup);
+    #insertNewHtml(position, markup) {
+        this.#parentElement.insertAdjacentHTML(position, markup);
     }
     eventHandlerRendrer(handler) {
         // we want to add same eventListner to multiple different events
@@ -818,15 +863,27 @@ class ViewRecipe {
     </div>`;
         return html;
     }
-    showSpinner = function() {
+    showSpinner() {
         const html = `<div class="spinner">
     <svg>
       <use href="${(0, _iconsSvgDefault.default)}#icon-loader"></use>
     </svg>
   </div>`;
-        this.#parentElement.innerHTML = "";
-        this.#parentElement.insertAdjacentHTML("afterbegin", html);
-    };
+        this.#clearExistingHtml();
+        this.#insertNewHtml("afterbegin", html);
+    }
+    showError(errMessage = this.#errorMessage) {
+        const html = `<div class="error">
+      <div>
+        <svg>
+          <use href="${(0, _iconsSvgDefault.default)}#icon-alert-triangle"></use>
+        </svg>
+      </div>
+      <p>${errMessage}</p>
+    </div>`;
+        this.#clearExistingHtml();
+        this.#insertNewHtml("afterbegin", html);
+    }
 }
 exports.default = new ViewRecipe(); // we are not exporting the whole class we are just exporting one instance
 
@@ -868,6 +925,27 @@ exports.getBundleURL = getBundleURLCached;
 exports.getBaseURL = getBaseURL;
 exports.getOrigin = getOrigin;
 
-},{}]},["f0HGD","aenu9"], "aenu9", "parcelRequire5e9f")
+},{}],"9OQAM":[function(require,module,exports) {
+// this module is handling the search bar
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+class ViewSearch {
+    #parentSearchElement = document.querySelector(".search");
+    getQuery() {
+        return this.#parentSearchElement.querySelector(".search__field").value;
+    }
+    clearInput() {
+        this.#parentSearchElement.querySelector(".search__field").value = "";
+    }
+    handleSearchResult(display) {
+        this.#parentSearchElement.addEventListener("submit", function(e) {
+            e.preventDefault();
+            display();
+        });
+    }
+}
+exports.default = new ViewSearch();
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["f0HGD","aenu9"], "aenu9", "parcelRequire5e9f")
 
 //# sourceMappingURL=index.e37f48ea.js.map
