@@ -1,7 +1,12 @@
 import * as modelData from './model';
 import recpview from './views/recipeView';
 import srchview from './views/searchView.js';
+import resultview from './views/resultView.js'; 
 
+
+if(module.hot){
+  module.hot.accept();
+}
 
 const showRecipe = async function () {
   try {
@@ -35,19 +40,21 @@ const displaySearchResult= async function(){
 
     if(!query) return;
 
+    resultview.showSpinner();
     await modelData.loadSearchResult(query);
 
-    console.log(modelData.state.search.results);
+    // console.log(modelData.state.search.results);
     // clear the field when search is completed
     srchview.clearInput();
+
+    resultview.render(modelData.state.search.results);
+
 
   }
   catch (err) {
     console.log(err);
   }
 }
-
-displaySearchResult();
 
 
 const init = function(){

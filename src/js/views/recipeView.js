@@ -1,25 +1,10 @@
 import icons from "url:../../img/icons.svg";
+import View from "./View";
 
-class ViewRecipe {
-  #parentElement = document.querySelector(".recipe");
-  #data;
-  #errorMessage = `Recipe Not Found TRY Again!!!`;
-
-  render(data) {
-    this.#data = data;
-    this.#clearExistingHtml();
-    const markup = this.#generateHtml();
-    this.#insertNewHtml("afterbegin", markup);
-  }
-
-  #clearExistingHtml() {
-    this.#parentElement.innerHTML = "";
-  }
-
-  #insertNewHtml(position, markup) {
-    this.#parentElement.insertAdjacentHTML(position, markup);
-  }
-
+class ViewRecipe extends View {
+  _parentElement = document.querySelector(".recipe");
+  _errorMessage = `Recipe Not Found TRY Again!!!`;
+ 
   eventHandlerRendrer(handler) {
     // we want to add same eventListner to multiple different events
     ["hashchange", "load"].forEach((event) =>
@@ -27,8 +12,8 @@ class ViewRecipe {
     );
   }
 
-  #generateHtml() {
-    const recipe = this.#data;
+  _generateHtml() {
+    const recipe = this._data;
     const html = `<figure class="recipe__fig">
       <img src="${recipe.image}" alt="${recipe.title}" class="recipe__img" />
       <h1 class="recipe__title">
@@ -124,32 +109,6 @@ class ViewRecipe {
     </div>`;
 
     return html;
-  }
-
-  showSpinner() {
-    const html = `<div class="spinner">
-    <svg>
-      <use href="${icons}#icon-loader"></use>
-    </svg>
-  </div>`;
-
-    this.#clearExistingHtml();
-    this.#insertNewHtml("afterbegin", html);
-  }
-
-  showError(errMessage = this.#errorMessage) {
-    const html = `<div class="error">
-      <div>
-        <svg>
-          <use href="${icons}#icon-alert-triangle"></use>
-        </svg>
-      </div>
-      <p>${errMessage}</p>
-    </div>`;
-
-    this.#clearExistingHtml();
-    this.#insertNewHtml('afterbegin',html);
-
   }
 
 

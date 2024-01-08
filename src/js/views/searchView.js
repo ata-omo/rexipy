@@ -1,17 +1,17 @@
 // this module is handling the search bar
 class ViewSearch{
-    #parentSearchElement = document.querySelector(".search");
+    _parentSearchElement = document.querySelector(".search");
 
     getQuery(){
-        return this.#parentSearchElement.querySelector('.search__field').value;
+        return this._parentSearchElement.querySelector('.search__field').value;
     }
 
     clearInput(){
-        this.#parentSearchElement.querySelector('.search__field').value = '';
+        this._parentSearchElement.querySelector('.search__field').value = '';
     }
 
     handleSearchResult(display){
-        this.#parentSearchElement.addEventListener('submit',function(e){
+        this._parentSearchElement.addEventListener('submit',function(e){
             e.preventDefault();
 
             display();
