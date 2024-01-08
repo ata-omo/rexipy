@@ -2,18 +2,6 @@ import * as modelData from './model';
 import view from './views/recipeView';
 
 
-
-const timeout = function (s) {
-  return new Promise(function (_, reject) {
-    setTimeout(function () {
-      reject(new Error(`Request took too long! Timeout after ${s} second`));
-    }, s * 1000);
-  });
-};
-
-
-///////////////////////////////////////
-
 const showRecipe = async function () {
   try {
 
@@ -38,7 +26,9 @@ const showRecipe = async function () {
   }
 };
 
-showRecipe();
 
-window.addEventListener('hashchange' , showRecipe);
-window.addEventListener('load' , showRecipe );
+const init = function(){
+  view.eventHandlerRendrer(showRecipe)
+};
+
+init();

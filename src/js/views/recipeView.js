@@ -21,6 +21,12 @@ class ViewRecipe {
   }
 
 
+  eventHandlerRendrer(handler){
+    // we want to add same eventListner to multiple different events
+    ['hashchange','load'].forEach((event)=>window.addEventListener(event,handler));
+  }
+
+
   #generateHtml() {
     const recipe = this.#data;
     const html = `<figure class="recipe__fig">
