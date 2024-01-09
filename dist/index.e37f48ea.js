@@ -613,7 +613,7 @@ const displaySearchResult = async function() {
         // console.log(modelData.state.search.results);
         // clear the field when search is completed
         (0, _searchViewJsDefault.default).clearInput();
-        (0, _resultViewJsDefault.default).render(_model.state.search.results);
+        (0, _resultViewJsDefault.default).render(_model.getSearchResultPage(2));
     } catch (err) {
         console.log(err);
     }
@@ -660,13 +660,16 @@ parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "state", ()=>state);
 parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe);
 parcelHelpers.export(exports, "loadSearchResult", ()=>loadSearchResult);
+parcelHelpers.export(exports, "getSearchResultPage", ()=>getSearchResultPage);
 var _config = require("./config");
 var _helper = require("./helper");
 const state = {
     recipe: {},
     search: {
         query: "",
-        results: []
+        results: [],
+        resultPerPage: (0, _config.RESULT_PER_PAGE),
+        page: 1
     }
 };
 const loadRecipe = async function(id) {
@@ -712,6 +715,12 @@ const loadSearchResult = async function(query) {
         throw err;
     }
 };
+const getSearchResultPage = function(pageNo = 1) {
+    state.search.page = pageNo;
+    const begin = (pageNo - 1) * state.search.resultPerPage;
+    const end = pageNo * state.search.resultPerPage;
+    return state.search.results.slice(begin, end);
+};
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config":"k5Hzs","./helper":"lVRAz"}],"k5Hzs":[function(require,module,exports) {
 // reused const variables are stored here
@@ -719,8 +728,10 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "API_URL", ()=>API_URL);
 parcelHelpers.export(exports, "TIMEOUT_SEC", ()=>TIMEOUT_SEC);
+parcelHelpers.export(exports, "RESULT_PER_PAGE", ()=>RESULT_PER_PAGE);
 const API_URL = "https://forkify-api.herokuapp.com/api/v2/recipes/";
 const TIMEOUT_SEC = 5;
+const RESULT_PER_PAGE = 11;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lVRAz":[function(require,module,exports) {
 // reused important functions are stored here

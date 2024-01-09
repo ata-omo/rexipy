@@ -47,7 +47,7 @@ const displaySearchResult= async function(){
     // clear the field when search is completed
     srchview.clearInput();
 
-    resultview.render(modelData.state.search.results);
+    resultview.render(modelData.getSearchResultPage(2));
 
 
   }
