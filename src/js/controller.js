@@ -74,10 +74,21 @@ const handlePageBtnClick = function(goToPage){
 
 }
 
-const init = function(){
+const handleServingBtnClick = function(newServing){
+  modelData.updateQuantity(newServing);
+  // render the updated data
+  // recpview.render(modelData.state.recipe);
+
+  // just update the changes without rendering whole component
+  recpview.update(modelData.state.recipe);
+}
+
+const init = function(){ // activating the page
   recpview.eventHandlerRendrer(showRecipe)
   srchview.handleSearchResult(displaySearchResult);
   pageview.renderOnBtnClick(handlePageBtnClick);
+  recpview.servingChangeHandler(handleServingBtnClick);
+
 };
 
 init();

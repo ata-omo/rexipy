@@ -629,10 +629,18 @@ const handlePageBtnClick = function(goToPage) {
     // render new pagination buttons on button click
     (0, _paginationViewJsDefault.default).render(_model.getPaginationData());
 };
+const handleServingBtnClick = function(newServing) {
+    _model.updateQuantity(newServing);
+    // render the updated data
+    // recpview.render(modelData.state.recipe);
+    // just update the changes without rendering whole component
+    (0, _recipeViewDefault.default).update(_model.state.recipe);
+};
 const init = function() {
     (0, _recipeViewDefault.default).eventHandlerRendrer(showRecipe);
     (0, _searchViewJsDefault.default).handleSearchResult(displaySearchResult);
     (0, _paginationViewJsDefault.default).renderOnBtnClick(handlePageBtnClick);
+    (0, _recipeViewDefault.default).servingChangeHandler(handleServingBtnClick);
 };
 init();
 
@@ -674,6 +682,7 @@ parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe);
 parcelHelpers.export(exports, "loadSearchResult", ()=>loadSearchResult);
 parcelHelpers.export(exports, "getSearchResultPage", ()=>getSearchResultPage);
 parcelHelpers.export(exports, "getPaginationData", ()=>getPaginationData);
+parcelHelpers.export(exports, "updateQuantity", ()=>updateQuantity);
 var _config = require("./config");
 var _helper = require("./helper");
 const state = {
@@ -737,6 +746,17 @@ const getSearchResultPage = function(pageNo = 1) {
 const getPaginationData = function() {
     return state.search;
 };
+const updateQuantity = function(newServing) {
+    const oldServing = state.recipe.servings;
+    // updating quantities
+    state.recipe.ingredients.forEach((ingredient)=>{
+        const oldQuantity = ingredient.quantity;
+        const newQuantity = newServing * oldQuantity / oldServing;
+        ingredient.quantity = newQuantity;
+    });
+    // updating servings
+    state.recipe.servings = newServing;
+};
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config":"k5Hzs","./helper":"lVRAz"}],"k5Hzs":[function(require,module,exports) {
 // reused const variables are stored here
@@ -794,6 +814,15 @@ class ViewRecipe extends (0, _viewDefault.default) {
             "load"
         ].forEach((event)=>window.addEventListener(event, handler));
     }
+    servingChangeHandler(handler) {
+        this._parentElement.addEventListener("click", function(e) {
+            const btn = e.target.closest(".btn--update-servings");
+            if (!btn) return;
+            const newServing = +btn.dataset.updateTo;
+            if (newServing > 0) handler(newServing);
+            else if (newServing <= 0) handler(1);
+        });
+    }
     _generateHtml() {
         const recipe = this._data;
         const html = `<figure class="recipe__fig">
@@ -819,12 +848,12 @@ class ViewRecipe extends (0, _viewDefault.default) {
         <span class="recipe__info-text">servings</span>
 
         <div class="recipe__info-buttons">
-          <button class="btn--tiny btn--increase-servings">
+          <button class="btn--tiny btn--update-servings" data-update-to="${recipe.servings - 1}">
             <svg>
               <use href="${(0, _iconsSvgDefault.default)}#icon-minus-circle"></use>
             </svg>
           </button>
-          <button class="btn--tiny btn--increase-servings">
+          <button class="btn--tiny btn--update-servings" data-update-to="${recipe.servings + 1}">
             <svg>
               <use href="${(0, _iconsSvgDefault.default)}#icon-plus-circle"></use>
             </svg>
@@ -901,6 +930,29 @@ class View {
         this._clearExistingHtml();
         const markup = this._generateHtml();
         this._insertNewHtml("afterbegin", markup);
+    }
+    update(data) {
+        if (!data || Array.isArray(data) && data.length === 0) return this.renderError();
+        this._data = data;
+        const newMarkup = this._generateHtml(); // it is in to form of string
+        const newDOM = document.createRange().createContextualFragment(newMarkup); // converted string to virtual DOM
+        // fetching elements from our dom 
+        const newElements = Array.from(newDOM.querySelectorAll("*"));
+        const currentElements = Array.from(this._parentElement.querySelectorAll("*"));
+        // comparing newly created markup and current markup
+        newElements.forEach(function(newEle, i) {
+            const curEle = currentElements[i];
+            // text node is the firsChild node in an element 
+            // it is null if there is no text
+            if (!newEle.isEqualNode(curEle) && newEle.firstChild.nodeValue.trim() !== "") curEle.textContent = newEle.textContent;
+            // but still only the text on ui changes and not the acutal attributes
+            if (!newEle.isEqualNode(curEle)) {
+                const newAttributes = Array.from(newEle.attributes);
+                newAttributes.forEach((attr)=>{
+                    curEle.setAttribute(attr.name, attr.value);
+                });
+            }
+        });
     }
     _clearExistingHtml() {
         this._parentElement.innerHTML = "";
@@ -1001,10 +1053,11 @@ var _viewDefault = parcelHelpers.interopDefault(_view);
 class ViewResult extends (0, _viewDefault.default) {
     _parentElement = document.querySelector(".results");
     _generateHtml() {
+        const id = window.location.hash.slice(1);
         const res = this._data;
         const html = `${res.map((rec)=>{
             return `<li class="preview">
-            <a class="preview__link" href="#${rec.id}">
+            <a class="preview__link }" href="#${rec.id}">
               <figure class="preview__fig">
                 <img src="${rec.image}" alt="Test" />
               </figure>

@@ -16,6 +16,49 @@ export default class View {
     this._insertNewHtml("afterbegin", markup);
   }
 
+  update(data){
+    if(!data || (Array.isArray(data) && data.length ===0 ))
+    return this.renderError();
+
+    this._data = data;
+    const newMarkup = this._generateHtml(); // it is in to form of string
+
+    const newDOM = document.createRange().createContextualFragment(newMarkup); // converted string to virtual DOM
+    
+    // fetching elements from our dom 
+    const newElements = Array.from(newDOM.querySelectorAll('*'));
+
+    const currentElements = Array.from(this._parentElement.querySelectorAll('*'));
+
+    // comparing newly created markup and current markup
+
+    newElements.forEach(function(newEle,i){
+      const curEle = currentElements[i];
+
+      // text node is the firsChild node in an element 
+      // it is null if there is no text
+      if(!newEle.isEqualNode(curEle) && newEle.firstChild.nodeValue.trim() !== ''){ // if changed
+        curEle.textContent = newEle.textContent;
+      }
+
+      // but still only the text on ui changes and not the acutal attributes
+
+      if(!newEle.isEqualNode(curEle)){
+        const newAttributes = Array.from(newEle.attributes);
+
+        newAttributes.forEach((attr)=>{
+          curEle.setAttribute(attr.name,attr.value);
+        });
+      }
+
+    })
+
+
+
+
+
+  }
+
   _clearExistingHtml() {
     this._parentElement.innerHTML = "";
   }

@@ -84,6 +84,27 @@ export const getSearchResultPage= function(pageNo=1){
   return state.search.results.slice(begin,end);
 }
 
+
+
 export const getPaginationData = function(){
   return state.search;
+}
+
+export const updateQuantity= function(newServing){
+
+  const oldServing = state.recipe.servings;
+
+  // updating quantities
+  state.recipe.ingredients.forEach(ingredient => {
+
+    const oldQuantity = ingredient.quantity;
+    const newQuantity = (newServing*oldQuantity)/oldServing;
+
+    ingredient.quantity = newQuantity;
+    
+  });
+
+  // updating servings
+
+  state.recipe.servings = newServing;
 }
