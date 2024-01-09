@@ -5,6 +5,7 @@ class ViewResult extends View{
 
     _parentElement = document.querySelector('.results');
 
+
     _generateHtml(){
         const res = this._data;
         const html = `${res.map((rec)=>{

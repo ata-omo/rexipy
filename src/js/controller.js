@@ -2,6 +2,7 @@ import * as modelData from './model';
 import recpview from './views/recipeView';
 import srchview from './views/searchView.js';
 import resultview from './views/resultView.js'; 
+import pageview from './views/paginationView.js';
 
 
 if(module.hot){
@@ -47,7 +48,12 @@ const displaySearchResult= async function(){
     // clear the field when search is completed
     srchview.clearInput();
 
-    resultview.render(modelData.getSearchResultPage(2));
+    // render search result
+    resultview.render(modelData.getSearchResultPage());
+
+    // render pagination
+
+    pageview.render(modelData.getPaginationData());
 
 
   }
@@ -56,10 +62,22 @@ const displaySearchResult= async function(){
   }
 }
 
+const handlePageBtnClick = function(goToPage){
+  
+  // render new search result on button click
+  resultview.render(modelData.getSearchResultPage(goToPage));
+
+  // render new pagination buttons on button click
+
+  pageview.render(modelData.getPaginationData());
+
+
+}
 
 const init = function(){
   recpview.eventHandlerRendrer(showRecipe)
   srchview.handleSearchResult(displaySearchResult);
+  pageview.renderOnBtnClick(handlePageBtnClick);
 };
 
 init();

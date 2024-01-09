@@ -5,6 +5,11 @@ export default class View {
   _data;
 
   render(data) {
+
+    // making render method valid for pagination logic
+    if(!data || (Array.isArray(data) && data.length ===0 ))
+    return this.renderError();
+
     this._data = data;
     this._clearExistingHtml();
     const markup = this._generateHtml();

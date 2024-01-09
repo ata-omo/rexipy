@@ -587,6 +587,8 @@ var _searchViewJs = require("./views/searchView.js");
 var _searchViewJsDefault = parcelHelpers.interopDefault(_searchViewJs);
 var _resultViewJs = require("./views/resultView.js");
 var _resultViewJsDefault = parcelHelpers.interopDefault(_resultViewJs);
+var _paginationViewJs = require("./views/paginationView.js");
+var _paginationViewJsDefault = parcelHelpers.interopDefault(_paginationViewJs);
 if (module.hot) module.hot.accept();
 const showRecipe = async function() {
     try {
@@ -613,18 +615,28 @@ const displaySearchResult = async function() {
         // console.log(modelData.state.search.results);
         // clear the field when search is completed
         (0, _searchViewJsDefault.default).clearInput();
-        (0, _resultViewJsDefault.default).render(_model.getSearchResultPage(2));
+        // render search result
+        (0, _resultViewJsDefault.default).render(_model.getSearchResultPage());
+        // render pagination
+        (0, _paginationViewJsDefault.default).render(_model.getPaginationData());
     } catch (err) {
         console.log(err);
     }
 };
+const handlePageBtnClick = function(goToPage) {
+    // render new search result on button click
+    (0, _resultViewJsDefault.default).render(_model.getSearchResultPage(goToPage));
+    // render new pagination buttons on button click
+    (0, _paginationViewJsDefault.default).render(_model.getPaginationData());
+};
 const init = function() {
     (0, _recipeViewDefault.default).eventHandlerRendrer(showRecipe);
     (0, _searchViewJsDefault.default).handleSearchResult(displaySearchResult);
+    (0, _paginationViewJsDefault.default).renderOnBtnClick(handlePageBtnClick);
 };
 init();
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./model":"Y4A21","./views/recipeView":"l60JC","./views/searchView.js":"9OQAM","./views/resultView.js":"f70O5"}],"gkKU3":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./model":"Y4A21","./views/recipeView":"l60JC","./views/searchView.js":"9OQAM","./views/resultView.js":"f70O5","./views/paginationView.js":"6z7bi"}],"gkKU3":[function(require,module,exports) {
 exports.interopDefault = function(a) {
     return a && a.__esModule ? a : {
         default: a
@@ -661,6 +673,7 @@ parcelHelpers.export(exports, "state", ()=>state);
 parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe);
 parcelHelpers.export(exports, "loadSearchResult", ()=>loadSearchResult);
 parcelHelpers.export(exports, "getSearchResultPage", ()=>getSearchResultPage);
+parcelHelpers.export(exports, "getPaginationData", ()=>getPaginationData);
 var _config = require("./config");
 var _helper = require("./helper");
 const state = {
@@ -720,6 +733,9 @@ const getSearchResultPage = function(pageNo = 1) {
     const begin = (pageNo - 1) * state.search.resultPerPage;
     const end = pageNo * state.search.resultPerPage;
     return state.search.results.slice(begin, end);
+};
+const getPaginationData = function() {
+    return state.search;
 };
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config":"k5Hzs","./helper":"lVRAz"}],"k5Hzs":[function(require,module,exports) {
@@ -879,6 +895,8 @@ var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
 class View {
     _data;
     render(data) {
+        // making render method valid for pagination logic
+        if (!data || Array.isArray(data) && data.length === 0) return this.renderError();
         this._data = data;
         this._clearExistingHtml();
         const markup = this._generateHtml();
@@ -1001,6 +1019,62 @@ class ViewResult extends (0, _viewDefault.default) {
     }
 }
 exports.default = new ViewResult();
+
+},{"url:../../img/icons.svg":"loVOp","./View":"5cUXS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6z7bi":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _iconsSvg = require("url:../../img/icons.svg");
+var _iconsSvgDefault = parcelHelpers.interopDefault(_iconsSvg);
+var _view = require("./View");
+var _viewDefault = parcelHelpers.interopDefault(_view);
+class ViewPage extends (0, _viewDefault.default) {
+    _parentElement = document.querySelector(".pagination");
+    renderOnBtnClick(handler) {
+        this._parentElement.addEventListener("click", function(e) {
+            const btn = e.target.closest(".btn--inline");
+            if (!btn) return;
+            const goToPage = +btn.dataset.goto;
+            console.log(goToPage);
+            handler(goToPage);
+        });
+    }
+    _generateHtml() {
+        const pageData = this._data;
+        const pageNumber = pageData.page;
+        const totalItem = pageData.results.length;
+        const pageCapacity = pageData.resultPerPage;
+        const remainingPages = Math.ceil(totalItem / pageCapacity) - pageNumber;
+        if (pageNumber == 1 && remainingPages > 0) return `<button data-goto="${pageNumber + 1}" class="btn--inline pagination__btn--next">
+          <span>Page ${pageNumber + 1}</span>
+          <svg class="search__icon">
+            <use href="${0, _iconsSvgDefault.default}#icon-arrow-right"></use>
+          </svg>
+        </button>`;
+        if (pageNumber > 1) {
+            if (remainingPages > 0) return `<button data-goto="${pageNumber - 1}" class="btn--inline pagination__btn--prev">
+              <svg class="search__icon">
+                <use href="${0, _iconsSvgDefault.default}#icon-arrow-left"></use>
+              </svg>
+              <span>Page ${pageNumber - 1}</span>
+            </button>
+            <button data-goto="${pageNumber + 1}" class="btn--inline pagination__btn--next">
+              <span>Page ${pageNumber + 1}</span>
+              <svg class="search__icon">
+                <use href="${0, _iconsSvgDefault.default}#icon-arrow-right"></use>
+              </svg>
+            </button>`;
+            else if (remainingPages == 0) return `<button data-goto="${pageNumber - 1}" class="btn--inline pagination__btn--prev">
+          <svg class="search__icon">
+            <use href="${0, _iconsSvgDefault.default}#icon-arrow-left"></use>
+          </svg>
+          <span>Page ${pageNumber - 1}</span>
+        </button>`;
+        // else return ``;
+        }
+    // else return '';
+    }
+}
+exports.default = new ViewPage();
 
 },{"url:../../img/icons.svg":"loVOp","./View":"5cUXS","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["f0HGD","aenu9"], "aenu9", "parcelRequire5e9f")
 

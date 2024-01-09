@@ -83,3 +83,7 @@ export const getSearchResultPage= function(pageNo=1){
 
   return state.search.results.slice(begin,end);
 }
+
+export const getPaginationData = function(){
+  return state.search;
+}
