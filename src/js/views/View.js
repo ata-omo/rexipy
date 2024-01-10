@@ -37,7 +37,7 @@ export default class View {
 
       // text node is the firsChild node in an element 
       // it is null if there is no text
-      if(!newEle.isEqualNode(curEle) && newEle.firstChild.nodeValue.trim() !== ''){ // if changed
+      if(!newEle.isEqualNode(curEle) && newEle.firstChild?.nodeValue.trim() !== ''){ // if changed
         curEle.textContent = newEle.textContent;
       }
 

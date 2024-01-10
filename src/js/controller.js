@@ -3,6 +3,7 @@ import recpview from './views/recipeView';
 import srchview from './views/searchView.js';
 import resultview from './views/resultView.js'; 
 import pageview from './views/paginationView.js';
+import bookmarkview from './views/bookmarkView.js';
 
 
 if(module.hot){
@@ -83,11 +84,24 @@ const handleServingBtnClick = function(newServing){
   recpview.update(modelData.state.recipe);
 }
 
+
+const handleToggleBookmark = function(){
+  modelData.toggleBookmark(modelData.state.recipe);
+  
+  recpview.update(modelData.state.recipe);
+  bookmarkview.render(modelData.state.bookmarks);
+}
+
+
+
+
+
 const init = function(){ // activating the page
   recpview.eventHandlerRendrer(showRecipe)
   srchview.handleSearchResult(displaySearchResult);
   pageview.renderOnBtnClick(handlePageBtnClick);
   recpview.servingChangeHandler(handleServingBtnClick);
+  recpview.bookmarkHandler(handleToggleBookmark);
 
 };
 
