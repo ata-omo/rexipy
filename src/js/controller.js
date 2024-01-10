@@ -6,9 +6,9 @@ import pageview from './views/paginationView.js';
 import bookmarkview from './views/bookmarkView.js';
 
 
-if(module.hot){
-  module.hot.accept();
-}
+// if(module.hot){
+//   module.hot.accept();
+// }
 
 const showRecipe = async function () {
   try {
@@ -20,7 +20,8 @@ const showRecipe = async function () {
     if(!id) return;
 
     // loading animation
-    recpview.showSpinner();
+    recpview.showSpinner(); 
+
 
     await modelData.loadRecipe(id); // not necessary to store in any variable
 
@@ -92,11 +93,15 @@ const handleToggleBookmark = function(){
   bookmarkview.render(modelData.state.bookmarks);
 }
 
+const handleBookmarkOnLoad = function(){
+  bookmarkview.render(modelData.state.bookmarks);
+}
 
 
 
 
 const init = function(){ // activating the page
+  bookmarkview.handleLocalBookmark(handleBookmarkOnLoad);
   recpview.eventHandlerRendrer(showRecipe)
   srchview.handleSearchResult(displaySearchResult);
   pageview.renderOnBtnClick(handlePageBtnClick);

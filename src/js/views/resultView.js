@@ -13,7 +13,7 @@ class ViewResult extends View{
         const res = this._data;
         const html = `${res.map((rec)=>{
             return `<li class="preview">
-            <a class="preview__link }" href="#${rec.id}">
+            <a class="preview__link ${rec.id === id ? 'preview__link--active':''}" href="#${rec.id}">
               <figure class="preview__fig">
                 <img src="${rec.image}" alt="Test" />
               </figure>

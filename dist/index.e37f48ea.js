@@ -591,7 +591,9 @@ var _paginationViewJs = require("./views/paginationView.js");
 var _paginationViewJsDefault = parcelHelpers.interopDefault(_paginationViewJs);
 var _bookmarkViewJs = require("./views/bookmarkView.js");
 var _bookmarkViewJsDefault = parcelHelpers.interopDefault(_bookmarkViewJs);
-if (module.hot) module.hot.accept();
+// if(module.hot){
+//   module.hot.accept();
+// }
 const showRecipe = async function() {
     try {
         // getting the dynamyc id from the search bar after the hash change 
@@ -643,7 +645,11 @@ const handleToggleBookmark = function() {
     (0, _recipeViewDefault.default).update(_model.state.recipe);
     (0, _bookmarkViewJsDefault.default).render(_model.state.bookmarks);
 };
+const handleBookmarkOnLoad = function() {
+    (0, _bookmarkViewJsDefault.default).render(_model.state.bookmarks);
+};
 const init = function() {
+    (0, _bookmarkViewJsDefault.default).handleLocalBookmark(handleBookmarkOnLoad);
     (0, _recipeViewDefault.default).eventHandlerRendrer(showRecipe);
     (0, _searchViewJsDefault.default).handleSearchResult(displaySearchResult);
     (0, _paginationViewJsDefault.default).renderOnBtnClick(handlePageBtnClick);
@@ -778,12 +784,19 @@ const toggleBookmark = function(recipe) {
             state.bookmarks.push(recipe);
             state.recipe.bookmarked = true;
         } else {
-            let index = state.bookmarks.indexOf(recipe);
+            let index = state.bookmarks.findIndex((curr)=>curr.id === recipe.id);
             if (index > -1) state.bookmarks.splice(index, 1);
             state.recipe.bookmarked = false;
         }
     }
+    localStorage.setItem("bookmarks", JSON.stringify(state.bookmarks));
 };
+const localBookmark = function() {
+    const local = localStorage.getItem("bookmarks");
+    // console.log(`${local} hello`);
+    if (local) state.bookmarks = JSON.parse(local);
+};
+localBookmark();
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config":"k5Hzs","./helper":"lVRAz"}],"k5Hzs":[function(require,module,exports) {
 // reused const variables are stored here
@@ -1091,7 +1104,7 @@ class ViewResult extends (0, _viewDefault.default) {
         const res = this._data;
         const html = `${res.map((rec)=>{
             return `<li class="preview">
-            <a class="preview__link }" href="#${rec.id}">
+            <a class="preview__link ${rec.id === id ? "preview__link--active" : ""}" href="#${rec.id}">
               <figure class="preview__fig">
                 <img src="${rec.image}" alt="Test" />
               </figure>
@@ -1173,6 +1186,9 @@ var _viewDefault = parcelHelpers.interopDefault(_view);
 class ViewBookmarks extends (0, _viewDefault.default) {
     _parentElement = document.querySelector(".bookmarks__list");
     _errorMessage = "No Bookmarks Yet :(";
+    handleLocalBookmark(handler) {
+        window.addEventListener("load", handler);
+    }
     _generateHtml() {
         const id = window.location.hash.slice(1);
         const res = this._data;

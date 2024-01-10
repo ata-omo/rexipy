@@ -127,11 +127,23 @@ export const toggleBookmark = function(recipe){
       state.recipe.bookmarked = true;
     }
     else{
-      let index = state.bookmarks.indexOf(recipe);
+      let index = state.bookmarks.findIndex(curr => curr.id === recipe.id);
       if(index > -1) {
         state.bookmarks.splice(index,1);
       }
       state.recipe.bookmarked = false;
     }
   }
+
+  localStorage.setItem('bookmarks', JSON.stringify(state.bookmarks));
+
 }
+
+
+const localBookmark = function(){
+  const local = localStorage.getItem('bookmarks');
+
+  // console.log(`${local} hello`);
+  if(local) state.bookmarks = JSON.parse(local);
+}
+localBookmark();

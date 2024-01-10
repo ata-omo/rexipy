@@ -6,6 +6,9 @@ class ViewBookmarks extends View{
     _parentElement = document.querySelector('.bookmarks__list');
     _errorMessage = 'No Bookmarks Yet :(';
 
+    handleLocalBookmark(handler){
+        window.addEventListener('load',handler);
+    }
 
     _generateHtml(){
 
