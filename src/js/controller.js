@@ -4,6 +4,7 @@ import srchview from './views/searchView.js';
 import resultview from './views/resultView.js'; 
 import pageview from './views/paginationView.js';
 import bookmarkview from './views/bookmarkView.js';
+import addrecipeview from './views/addRecipe.js';
 
 
 // if(module.hot){
